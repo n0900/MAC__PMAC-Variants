@@ -2,8 +2,7 @@
 #define PZMAC
 
 #include <stdint.h>
-#include "../globvar.h"
-#include "../forkskinny/skinny.h"
+#include "../../forkskinny-opt32/skinny.h"
 
 typedef union {
     skinny_128_256_tweakey_schedule_t *tks128;
@@ -11,51 +10,56 @@ typedef union {
 } TweakeySched;
 
 typedef struct {
-    unsigned char v[TS];
-    unsigned char u[BS];
+    uint8_t v[16];
+    uint8_t u[16];
 } MacChains;
 
 typedef struct{
-    unsigned char in[BS];
-    unsigned char out[BS];
+    uint8_t in[16];
+    uint8_t out[16];
     skinny_128_256_tweakey_schedule_t *tks1;
     skinny_128_256_tweakey_schedule_t *tks2;
 } Pmac1Struct;
 
 typedef struct {
-    unsigned char message[BS];
-    unsigned char tweak[TS];
-	unsigned char out[BS*2];
+    uint8_t message[16];
+    uint8_t tweak[16];
+    uint8_t out[32];
     TweakeySched tks1;
     TweakeySched tks2;
 } Pmac2xStruct;
 
 typedef struct {
-    unsigned char message[BS];
-    unsigned char tweak[TS];
-    unsigned char P[BS+TS];
-    unsigned char mask_l[BS];
-    unsigned char mask_r[BS];
-	unsigned char out[BS*2];
+    uint8_t message[16];
+    uint8_t tweak[16];
+    uint8_t P[32];
+    uint8_t mask_l[16];
+    uint8_t mask_r[16];
+    uint8_t out[32];
     TweakeySched tks1;
     TweakeySched tks2;
 } ZmacStruct;
 
+#define PZMAC_192_N_SIZE 8
+#define PZMAC_192_K_SIZE 16
+#define PZMAC_192_T_SIZE 7
+#define PZMAC_192_P_SIZE (PZMAC_192_N_SIZE + PZMAC_192_T_SIZE)
 
-// Utils
-//void skinny_encrypt(unsigned char *output, unsigned char *input, unsigned char *key);
+#define PZMAC_256_N_SIZE 16
+#define PZMAC_256_K_SIZE 16
+#define PZMAC_256_T_SIZE 15
+#define PZMAC_256_P_SIZE (PZMAC_256_N_SIZE + PZMAC_256_T_SIZE)
 
 // PMAC1
-void PMAC1_encrypt(unsigned char *out, unsigned char *key, uint32_t mlen, uint64_t *cc);
+void PMAC1_256_skinny(const uint8_t key[16], uint8_t out[16], const uint8_t *message, const uint32_t mlen);
 
 // PMAC2x
-// static void PHASH2x(Pmac2xStruct *pPmac2x, MacChains *pChains);
-// static void PFIN2x(Pmac2xStruct *pPmac2x, MacChains *pChains);
-void PMAC2x_encrypt(unsigned char *out_left, unsigned char *out_right, unsigned char *key, uint32_t mlen, uint64_t *cc);
+void PMAC2x_192_skinny(const uint8_t key[16], uint8_t out_left[ 8], uint8_t out_right[ 8], const uint8_t *message, const uint32_t mlen);
+void PMAC2x_256_skinny(const uint8_t key[16], uint8_t out_left[16], uint8_t out_right[16], const uint8_t *message, const uint32_t mlen);
 
 // ZMAC
-// static void ZHASH(ZmacStruct *pZmac, MacChains *pChains);
-// static void ZFIN(ZmacStruct *pZmac, uint8_t i);
-// static void ZMAC_padding_stream(ZmacStruct *pZmac, uint8_t *fin, uint8_t res);
-void ZMAC_encrypt(unsigned char *out_left, unsigned char *out_right, unsigned char *key, uint32_t mlen, uint64_t *cc);
+void ZMAC_192_skinny(const uint8_t key[16], uint8_t out_left[ 8], uint8_t out_right[ 8], const uint8_t *message, const uint32_t mlen);
+void ZMAC_256_skinny(const uint8_t key[16], uint8_t out_left[16], uint8_t out_right[16], const uint8_t *message, const uint32_t mlen);
+
 #endif
+
